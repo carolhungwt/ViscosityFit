@@ -19,4 +19,4 @@ std::istream& operator>>(std::istream& is, datumpair& datum){
 	return is;
 }
 
-
+vector<datumpair> vec_data;

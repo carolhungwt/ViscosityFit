@@ -19,7 +19,7 @@ vector<datumpair> ReadDataFile(TString filename){
 
 
 void readData(TString filename){
-	vector<datumpair> vec_data;
+//	vector<datumpair> vec_data;
 	vec_data = ReadDataFile(filename);
-	cout<<vec_data[3].x<<endl;	
+//	cout<<vec_data[3].x<<endl;	
 }
