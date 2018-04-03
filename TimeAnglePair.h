@@ -6,6 +6,7 @@
 #include <string>
 #include <iterator>
 #include "TGraph.h"
+#include "TString.h"
 
 //template<typename T> 
 struct datumpair
@@ -25,15 +26,15 @@ std::istream& operator>>(std::istream& is, datumpair& datum){ //overload the ope
 
 class TimeAnglePair{
 protected:
-	std::string objname;
+	TString objname;
 	std::vector<datumpair> data;	
 
 public:
 	TimeAnglePair();
-	TimeAnglePair(std::string objname_, const std::vector<datumpair> &data_);
+	TimeAnglePair(TString objname_, const std::vector<datumpair> &data_);
 	~TimeAnglePair();
 
-	string GetName(){return objname;}
+	TString GetName(){return objname;}
 	vector<double> getXs(){std::vector<double> Xs; for(unsigned int ix=0; ix<data.size();ix++){Xs.push_back(data[ix].x);}
 	return Xs;}
 	vector<double> getYs(){std::vector<double> Ys; for(unsigned int iy=0; iy<data.size();iy++){Ys.push_back(data[iy].y);}
@@ -45,7 +46,7 @@ public:
 		return g1;}
 };
 
-inline TimeAnglePair::TimeAnglePair(std::string objname_, const std::vector<datumpair> &data_)
+inline TimeAnglePair::TimeAnglePair(TString objname_, const std::vector<datumpair> &data_)
 {
 	objname = objname_;
 	data = data_;
