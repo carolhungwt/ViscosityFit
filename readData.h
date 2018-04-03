@@ -17,4 +17,4 @@ double arctan(double *x, double *par){
 }
 
 vector<datumpair> vec_data;
-TString filenamestem;
+string filenamestem;

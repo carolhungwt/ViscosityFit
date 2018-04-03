@@ -27,9 +27,8 @@ void drawgraph(TGraph& tg){
 }
 
 void dofit(){
-	vector<double> xdata = getData("x");
-	vector<double> ydata = getData("y");
-	TGraph* tg = new TGraph(xdata.size(), xdata.data(), ydata.data());
+	TimeAnglePair *obj1 = new TimeAnglePair(filenamestem, vec_data);
+	TGraph* tg = obj1->getTGraph();
 
 	TF1 *fit = new TF1("arctanfit",arctan,0.,0.2,1);
 	fit->SetParameter(0,8);
