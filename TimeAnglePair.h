@@ -24,20 +24,32 @@ std::istream& operator>>(std::istream& is, datumpair& datum){ //overload the ope
 
 
 class TimeAnglePair{
+protected:
+	std::string objname;
+	std::vector<datumpair> data;	
 
 public:
-	TimeAnglePair(string objname, const std::vector<datumpair> &data);
+	TimeAnglePair();
+	TimeAnglePair(std::string objname_, const std::vector<datumpair> &data_);
 	~TimeAnglePair();
 
 	string GetName(){return objname;}
-	vector<double> getXs(){std::vector<double> Xs; for(unsigned int ix=0; ix<data.size();ix++){Xs.push_back(data[ix].x)};}
-	vector<double> getYs(){std::vector<double> Ys; for(unsigned int iy=0; iy<data.size();iy++){Ys.push_back(data[iy].y)};}
+	vector<double> getXs(){std::vector<double> Xs; for(unsigned int ix=0; ix<data.size();ix++){Xs.push_back(data[ix].x);}
+	return Xs;}
+	vector<double> getYs(){std::vector<double> Ys; for(unsigned int iy=0; iy<data.size();iy++){Ys.push_back(data[iy].y);}
+	return Ys;}
 	TGraph* getTGraph(){
 		vector<double> xdata = getXs();
 		vector<double> ydata = getYs();
-		TGraph* g1 = new TGraph(data.size(),xdata.data(),ydata.data())
+		TGraph* g1 = new TGraph(data.size(),xdata.data(),ydata.data());
 		return g1;}
 };
+
+inline TimeAnglePair::TimeAnglePair(std::string objname_, const std::vector<datumpair> &data_)
+{
+	objname = objname_;
+	data = data_;
+}
 
 #endif
 
