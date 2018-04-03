@@ -46,6 +46,7 @@ public:
 		return g1;}
 };
 
+//https://stackoverflow.com/questions/4761834/defining-constructor-in-header-file-vs-implementation-cpp-file
 inline TimeAnglePair::TimeAnglePair(TString objname_, const std::vector<datumpair> &data_)
 {
 	objname = objname_;
