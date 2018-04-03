@@ -18,8 +18,9 @@ vector<datumpair> ReadDataFile(TString filename){
 }
 
 
-void readData(TString filename){
+void readData(string filename){
 //	vector<datumpair> vec_data;
+	filenamestem = filename.substr(0,filename.find("."));
 	vec_data = ReadDataFile(filename);
 //	cout<<vec_data[3].x<<endl;	
 }
