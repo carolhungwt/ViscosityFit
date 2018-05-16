@@ -2,41 +2,33 @@
 
 import cv2, os
 import numpy as np
-from helper import readimage, readdir, crop, flattened, disp, saveimage
+from helper import readimage, readdir, crop, flattened, disp, saveimage, retriveCircle, imageCenter, getImageIndex
 from secondMoment import secondMoment
+from secondMomentNoIntensity import secondMomentNoIntensity
 
-testpath = '/Users/carolhungwt/Documents/10G_static_20mag_125fps/'
+#testpath = '/Users/carolhungwt/Documents/10G_static_20mag_125fps/'
+testpath = '/Users/carolhungwt/Documents/Leheny/NanYangDisk/disk2/3GY-2GX-125fps'
 debug = 0
+v=0
 
-
-def selectBiggestCircle(circles):
-  selcircle,R = 0.,0
-  for i,circle in enumerate(circles):
-    _,_,curR = circle[i]
-    if curR > R:  
-      selcircle = circle[i]
-  selcircle[2]=selcircle[2]+5
-  return selcircle
-
-def retriveCircle(refimg):
-  canny = cv2.Canny(refimg,50,200)
-  #cv2.imshow('canny',canny)
-  #cv2.waitKey(0)param1=30,param2=30
-  circles = cv2.HoughCircles(canny,cv2.HOUGH_GRADIENT,1,5,param1=250,param2=20,minRadius=0,maxRadius=80)
-  circles = np.uint16(np.around(circles))
-  if debug: 
-    print(circles[0])
-    output = refimg.copy()
-    for (x,y,r) in circles[0]:
-      cv2.circle(output, (x, y), r, (0, 255, 0), 3)
-      cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
-    #cv2.startWindowThread()
-    #cv2.namedWindow("output")
-    cv2.imshow("output", np.hstack([refimg, output]))
-    cv2.waitKey(0)
-    saveimage('~/output.png',output)
-  circle = selectBiggestCircle(circles)
-  return circle
+def getContour(canny):
+  _, contours, _= cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  contour_list = []
+  for contour in contours:
+    approx = cv2.approxPolyDP(contour,0.01*cv2.arcLength(contour,True),True)
+    area = cv2.contourArea(contour)
+    if (len(approx) > 8 and (area>20)):
+      contour_list.append(contour)  
+      try:
+        largestdisk = contour_list[0]
+      except Exception:
+        print('No disk found in '+self.picdir)
+        return
+      if len(contour_list)>1:
+        for contour in contour_list:
+          if cv2.contourArea(contour)>cv2.contourArea(largestdisk):
+            largestdisk = contour 
+    return largestdisk
 
 
 class diskframe(object):
@@ -62,7 +54,7 @@ class diskframe(object):
 
   @property 
   def cropped(self):
-    cropped = crop(self.original,self.circle)
+    cropped = crop(self.original,self.circle, rim=8)
     return cropped
 
   @property
@@ -95,25 +87,45 @@ class diskframe(object):
     return bkgzeroed        
 
   @property
-  def secondMomentAngle(self):
+  def translated(self):
     tmpobj = self.bkgzeroed
-    theta = secondMoment(tmpobj)
+    circle = retriveCircle(tmpobj,method='gaussian')
+    imagecenter = imageCenter(tmpobj)
+    shiftx = imagecenter[0]-circle[0]
+    shifty = imagecenter[1]-circle[1]
+    nrow, ncol = tmpobj.shape[:2]
+    translationMat = np.float32([ [1,0,shiftx], [0,1,shifty] ])
+    translated = cv2.warpAffine(tmpobj, translationMat, (ncol, nrow))
+    if debug:
+      cv2.imshow('translated',translated)
+      waitKey(0)
+    return translated
+
+  @property
+  def secondMomentAngle(self,Intensity=0):
+    tmpobj = self.bkgzeroed
+    if Intensity==0:
+      theta = secondMomentNoIntensity(tmpobj)
+    else:
+      theta = secondMoment(tmpobj)
     return theta
 
 
 if __name__=='__main__':
   pics = readdir(testpath)
   refcircle = 0 
-  #pics = pics[:2]
+  pics = pics[:50]
   for i,pic in enumerate(pics):
+    index = getImageIndex(pic)
     pic = os.path.join(testpath,pic)
-    if i==0:  
-      refimg = readimage(pic)
-      refcircle = retriveCircle(refimg)
+    img = readimage(pic)
+    if i==0:  refcircle = retriveCircle(img,method='gaussian')
     disk = diskframe(pic, refcircle)
     disk.zeroThreshold = 150
-    savepath = pic.split('.tif')[0]+'_processed.png'
+    savepath = os.path.join(testpath,str(i)+'_processed.png')
+    #savepath = pic.split('.tif')[0]+'_processed.png'
     saveimage(savepath, disk.bkgzeroed)
     #disp(flattened(disk.bkgzeroed))
-    print(disk.secondMomentAngle)
+    if i==0:  refAngle = disk.secondMomentAngle[0]
+    print(index+' '+str(disk.secondMomentAngle[0]-refAngle))
 
