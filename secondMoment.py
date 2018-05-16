@@ -12,6 +12,7 @@
 
 import cv2
 import numpy as np
+from helper import retriveCircle, imageCenter
 
 def geta(img, xbar):
   shape = np.shape(img)
@@ -43,9 +44,16 @@ def getc(img, ybar):
       Csum = Csum+tempval
   return Csum
 
-def secondMoment(img):
+def secondMoment(img,**kwargs):
   shape = np.shape(img)
-  xbar, ybar = int(shape[0]/2), int(shape[1]/2)
+  img = cv2.GaussianBlur(img,(3,3),0,0)
+  circle = retriveCircle(img,method='gaussian')
+  xbar, ybar = circle[0], circle[1]
+  #imagecenter = imageCenter(img)
+  #xbar, ybar = imagecenter[0],imagecenter[1]
   a, b, c = geta(img, xbar), getb(img, xbar, ybar), getc(img, ybar)
-  theta = 0.5*np.arctan(b/(a-c))
+  #theta = 0.5*np.arctan(b/(a-c))
+  theta1 = np.arcsin(b/np.sqrt(b*b+(a-c)*(a-c)))
+  theta2 = np.arccos((a-c)/np.sqrt(b*b+(a-c)*(a-c)))
+  theta = [theta1, theta2]
   return theta
