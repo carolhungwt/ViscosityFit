@@ -3,6 +3,10 @@ import cv2, numpy, os, subprocess
 
 debug =0
 
+def pwd():
+  cwd = os.getcwd()
+  return cwd
+
 #https://stackoverflow.com/questions/273192/how-can-i-create-a-directory-if-it-does-not-exist
 def makedir(basedir, foldername):
   newdir = os.path.join(basedir,foldername)
@@ -79,7 +83,33 @@ def selectBiggestCircle(circles):
   selcircle[2]=selcircle[2]
   return selcircle
 
+
 def retriveCircle(refimg,**kwargs):
+  circle = []
+  for (k,v) in kwargs.items():
+    k = k.lower()
+    if k == 'method':
+      if v == 'hough':
+        circle = getCirclewithHough(refimg,method='gaussian')
+      elif v == 'contour':
+        circle = getCirclewithContour(refimg)
+      else:
+        raise Exception('method entered for circle retrival: '+str(v))
+  if circle == []:
+    raise Exception('Cannot retrive circle from the image. Tune parameters and try again.')
+  return circle
+
+
+def getCirclewithContour(refimg):
+  tempimg = refimg
+  contour = getContour(refimg)
+  center, radius = cv2.minEnclosingCircle(contour)
+  circle = [center[0],center[1],radius]
+  circle = numpy.uint16(numpy.around(circle))
+  return circle
+
+
+def getCirclewithHough(refimg,**kwargs):
   #default mehtod is cv2.Canny edge detection, no noise reduction
   tempimg = refimg
   for (k,v) in kwargs.items():
@@ -119,8 +149,11 @@ def getImageIndex(picpath):
   index = tag[-2:]
   return index
 
-def getContour(canny):
+
+
+def getContour(img):
   debug =0
+  canny = cv2.Canny(img,100,150)
   _, contours, _= cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
   contour_list = []
   for contour in contours:
@@ -140,8 +173,7 @@ def getContour(canny):
   return largestdisk
 
 def getCentroid(img):
-  canny = cv2.Canny(img,100,150)
-  contour = getContour(canny)
+  contour = getContour(img)
   M = cv2.moments(contour)
   if debug:  print(M)
   try: 
