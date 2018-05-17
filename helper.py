@@ -164,6 +164,12 @@ def getContour(img):
     if len(approx) > 8 and (area>20):
       contour_list.append(contour)  
   if not contour_list:  
+    debugpath = os.path.join(pwd(),'debug_getContour.png');
+    debugoriginalpath = os.path.join(pwd(),'debug_original_getContour.png');
+    cv2.imwrite(debugoriginalpath,img)
+    cv2.imwrite(debugpath,canny)
+    print('******************\n'+debugoriginalpath+' has been created\n' \
+      +debugpath+' has been created\n ************************')
     raise Exception('contour_list is empty, change selection criteria and try again')
   largestdisk = contour_list[0]
   if len(contour_list)>1:
